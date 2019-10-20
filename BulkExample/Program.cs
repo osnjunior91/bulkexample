@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -12,12 +13,13 @@ namespace BulkExample
         private static HttpClient _httpClient;
         private static HttpClient HttpClient => _httpClient ?? (_httpClient = new HttpClient());
         private static List<Partida> partidas = new List<Partida>();
+        private static Stopwatch sw;
         static void Main(string[] args)
         {
             Console.WriteLine("Carregando os dados...");
 
             HttpClient.DefaultRequestHeaders.Add("x-rapidapi-host", "free-nba.p.rapidapi.com");
-            HttpClient.DefaultRequestHeaders.Add("x-rapidapi-key", "********************");
+            HttpClient.DefaultRequestHeaders.Add("x-rapidapi-key", "*******************************");
             HttpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -26,12 +28,26 @@ namespace BulkExample
             int pagina = 1;
             int total = result.Dados.TotalPages;
             partidas.AddRange(result.Partidas);
-            //for (int i = pagina; i <= total; i++)
-            //{
-            //    response = HttpClient.GetAsync($"{Url}&page={i}").Result;
-            //    result = JsonConvert.DeserializeObject<Result>(response.Content.ReadAsStringAsync().Result);
-            //    partidas.AddRange(result.Partidas);
-            //}
+
+            for (int i = pagina; i <= 10; i++)
+            {
+                response = HttpClient.GetAsync($"{Url}&page={i}").Result;
+                result = JsonConvert.DeserializeObject<Result>(response.Content.ReadAsStringAsync().Result);
+                partidas.AddRange(result.Partidas);
+            }
+
+            using (var context = new Context())
+            {
+                sw = Stopwatch.StartNew();
+                context.SalvaPartidasEntity(partidas);
+                sw.Stop();
+                Console.WriteLine($"Foram gastos {TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).TotalSeconds} segundos para salvar {partidas.Count} registros.");
+                sw = Stopwatch.StartNew();
+                context.RemoverTodosEntity(partidas);
+                sw.Stop();
+                Console.WriteLine($"Foram gastos {TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds).TotalSeconds} segundos para excluir os registros.");
+            }
+            
 
             Console.ReadKey();
         }

@@ -7,7 +7,19 @@ namespace BulkExample
 {
     public class Context : DbContext
     {
-        public DbSet<Partida> Partidas { get; set; }
+        private DbSet<Partida> Partidas { get; set; }
+
+        public void SalvaPartidasEntity(List<Partida> partidas)
+        {
+            Partidas.AddRange(partidas);
+            this.SaveChanges();
+        }
+
+        public void RemoverTodosEntity(List<Partida> partidas)
+        {
+            Partidas.RemoveRange(partidas);
+            this.SaveChanges();
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

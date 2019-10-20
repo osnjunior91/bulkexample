@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BulkExample
@@ -7,6 +8,11 @@ namespace BulkExample
     [Table("PARTIDA")]
     public class Partida
     {
+        [Key]
+        [Column("ID")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [JsonIgnore]
+        public int ID { get; set; }
         [Column("DATA_PARTIDA")] 
         [JsonProperty(PropertyName = "date")]
         public DateTime DataPartida { get; set; }
